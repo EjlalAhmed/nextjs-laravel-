@@ -29,56 +29,75 @@ export default function DashboardPage() {
       return;
     }
 
-    axios.get('http://127.0.0.1:8000/api/dashboard', { headers: { Authorization: `Bearer ${token}` } }).then((res) => {
-      setSummary(res.data.summary);
-      setTransactions(res.data.transactions);
-    });
+    axios
+      .get('http://127.0.0.1:8000/api/dashboard', { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => {
+        setSummary(res.data.summary);
+        setTransactions(res.data.transactions);
+      })
+      .catch(() => {});
   }, []);
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[24px] border border-stone-300 bg-[#fffdfa] p-6 shadow-[0_12px_35px_-20px_rgba(74,47,22,0.4)]">
-        <p className="text-sm uppercase tracking-[0.3em] text-stone-500">Overview</p>
-        <h1 className="mt-2 text-3xl font-semibold text-stone-800">Your financial snapshot</h1>
+      <div className="card">
+        <p className="muted" style={{ textTransform: 'uppercase', letterSpacing: '.15em', fontSize: 12 }}>
+          Overview
+        </p>
+        <h1 style={{ marginTop: 8, fontSize: 26, fontWeight: 700 }}>Your financial snapshot</h1>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <div className="rounded-[20px] border border-stone-300 bg-[#fffdfa] p-5 shadow-sm">
-          <p className="text-sm text-stone-500">Total Income</p>
-          <p className="mt-2 text-2xl font-semibold text-stone-800">${summary?.total_income ?? 0}</p>
+      <div className="kpi-grid">
+        <div className="card">
+          <p className="muted">Total Income</p>
+          <p style={{ marginTop: 8, fontSize: 20, fontWeight: 700 }}>${summary?.total_income ?? 0}</p>
         </div>
-        <div className="rounded-[20px] border border-stone-300 bg-[#fffdfa] p-5 shadow-sm">
-          <p className="text-sm text-stone-500">Total Expense</p>
-          <p className="mt-2 text-2xl font-semibold text-stone-800">${summary?.total_expense ?? 0}</p>
+        <div className="card">
+          <p className="muted">Total Expense</p>
+          <p style={{ marginTop: 8, fontSize: 20, fontWeight: 700 }}>${summary?.total_expense ?? 0}</p>
         </div>
-        <div className="rounded-[20px] border border-stone-300 bg-[#fffdfa] p-5 shadow-sm">
-          <p className="text-sm text-stone-500">Balance</p>
-          <p className="mt-2 text-2xl font-semibold text-stone-800">${summary?.balance ?? 0}</p>
+        <div className="card">
+          <p className="muted">Balance</p>
+          <p style={{ marginTop: 8, fontSize: 20, fontWeight: 700 }}>${summary?.balance ?? 0}</p>
         </div>
-        <div className="rounded-[20px] border border-stone-300 bg-[#fffdfa] p-5 shadow-sm">
-          <p className="text-sm text-stone-500">Monthly Budget</p>
-          <p className="mt-2 text-2xl font-semibold text-stone-800">${summary?.monthly_budget ?? 0}</p>
+        <div className="card">
+          <p className="muted">Monthly Budget</p>
+          <p style={{ marginTop: 8, fontSize: 20, fontWeight: 700 }}>${summary?.monthly_budget ?? 0}</p>
         </div>
       </div>
 
-      <div className="rounded-[24px] border border-stone-300 bg-[#fffdfa] p-6 shadow-[0_12px_35px_-20px_rgba(74,47,22,0.35)]">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-stone-800">Recent Transactions</h2>
-          <a href="/transactions" className="text-sm font-medium text-stone-700 underline">View all</a>
+      <div className="card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700 }}>Recent Transactions</h2>
+          <a href="/transactions" className="muted">
+            View all
+          </a>
         </div>
-        <div className="space-y-3">
-          {transactions.map((transaction) => (
-            <div key={transaction.id} className="flex items-center justify-between rounded-xl border border-stone-200 bg-stone-50 p-3">
-              <div>
-                <p className="font-medium text-stone-800">{transaction.description}</p>
-                <p className="text-sm text-stone-500">{transaction.transaction_date}</p>
-              </div>
-              <span className={`font-semibold ${transaction.type === 'income' ? 'text-emerald-700' : 'text-rose-700'}`}>
-                {transaction.type === 'income' ? '+' : '-'}${transaction.amount}
-              </span>
-            </div>
-          ))}
-        </div>
+
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th className="muted">Type</th>
+              <th style={{ textAlign: 'right' }}>Amount</th>
+              <th className="muted">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {transactions.map((transaction) => (
+              <tr key={transaction.id}>
+                <td>
+                  <div style={{ fontWeight: 600 }}>{transaction.description}</div>
+                </td>
+                <td className="muted">{transaction.type}</td>
+                <td style={{ textAlign: 'right' }} className={transaction.type === 'income' ? 'badge-income' : 'badge-expense'}>
+                  {transaction.type === 'income' ? '+' : '-'}${transaction.amount}
+                </td>
+                <td className="muted">{transaction.transaction_date}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

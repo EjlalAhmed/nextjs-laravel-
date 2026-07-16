@@ -26,22 +26,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_#f9f5ea,_#efe4cc)] px-4">
-      <div className="w-full max-w-md rounded-[24px] border border-stone-300 bg-[#fffdfa] p-8 shadow-[0_16px_50px_-20px_rgba(74,47,22,0.35)]">
-        <div className="mb-6 text-center">
-          <p className="text-sm uppercase tracking-[0.35em] text-stone-500">Classic Ledger</p>
-          <h1 className="mt-2 text-3xl font-semibold text-stone-800">Welcome back</h1>
-          <p className="mt-2 text-sm text-stone-600">Sign in to continue managing your household accounts.</p>
+    <div style={{display:'flex',minHeight:'100vh',alignItems:'center',justifyContent:'center',padding:20}}>
+      <div className="card" style={{maxWidth:480,width:'100%'}}>
+        <div style={{textAlign:'center',marginBottom:12}}>
+          <p className="muted" style={{textTransform:'uppercase',letterSpacing:'.18em'}}>FlowExpense</p>
+          <h1 style={{marginTop:8,fontSize:22,fontWeight:700}}>Welcome back</h1>
+          <p className="muted" style={{marginTop:6,fontSize:13}}>Sign in to continue managing your accounts.</p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input className="w-full rounded-xl border border-stone-300 bg-white p-3 text-stone-700 outline-none ring-0" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <input className="w-full rounded-xl border border-stone-300 bg-white p-3 text-stone-700 outline-none ring-0" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-          <button className="w-full rounded-xl bg-stone-800 p-3 font-medium text-white transition hover:bg-stone-700" type="submit" disabled={loading}>
-            {loading ? 'Signing in...' : 'Login'}
-          </button>
+        <form onSubmit={handleSubmit} style={{display:'grid',gap:12}}>
+          <input className="form-input" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input className="form-input" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <button className="btn" type="submit" disabled={loading}>{loading ? 'Signing in...' : 'Login'}</button>
         </form>
-        <p className="mt-5 text-center text-sm text-stone-600">
-          No account? <a className="font-medium text-stone-800 underline" href="/register">Create one</a>
+        <p className="muted" style={{marginTop:14,textAlign:'center',fontSize:13}}>
+          No account? <a className="muted" href="/register" style={{fontWeight:700,textDecoration:'underline'}}>Create one</a>
         </p>
       </div>
     </div>

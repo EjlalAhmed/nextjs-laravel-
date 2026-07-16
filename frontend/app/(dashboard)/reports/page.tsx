@@ -18,25 +18,25 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl bg-white p-6 shadow">
-        <h2 className="mb-4 text-xl font-semibold">Monthly Report</h2>
-        <div className="h-80">
+      <div className="card">
+        <h2 style={{marginBottom:12,fontSize:18,fontWeight:700}}>Monthly Report</h2>
+        <div style={{height:320}}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={monthly}>
-              <CartesianGrid strokeDasharray="3 3" />
+              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.06} />
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="income" fill="#10b981" />
+              <Bar dataKey="income" fill="#06b6d4" />
               <Bar dataKey="expense" fill="#ef4444" />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      <div className="rounded-2xl bg-white p-6 shadow">
-        <h2 className="mb-4 text-xl font-semibold">Category Report</h2>
-        <div className="h-80">
+      <div className="card">
+        <h2 style={{marginBottom:12,fontSize:18,fontWeight:700}}>Category Report</h2>
+        <div style={{height:320}}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie data={categoryData} dataKey="total" nameKey="category" outerRadius={120}>

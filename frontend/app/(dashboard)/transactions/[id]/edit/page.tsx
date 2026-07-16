@@ -34,21 +34,21 @@ export default function EditTransactionPage() {
   };
 
   return (
-    <div className="max-w-2xl rounded-2xl bg-white p-8 shadow">
-      <h1 className="mb-6 text-2xl font-semibold">Edit Transaction</h1>
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        <select className="w-full rounded border p-3" value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}>
+    <div className="card" style={{maxWidth:720}}>
+      <h1 style={{marginBottom:12,fontSize:20,fontWeight:700}}>Edit Transaction</h1>
+      <form style={{display:'grid',gap:12}} onSubmit={handleSubmit}>
+        <select className="form-input" value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}>
           <option value="">Select category</option>
           {categories.map((category) => (<option key={category.id} value={category.id}>{category.name}</option>))}
         </select>
-        <select className="w-full rounded border p-3" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
+        <select className="form-input" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
           <option value="income">Income</option>
           <option value="expense">Expense</option>
         </select>
-        <input className="w-full rounded border p-3" placeholder="Amount" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
-        <input className="w-full rounded border p-3" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-        <input className="w-full rounded border p-3" type="date" value={form.transaction_date} onChange={(e) => setForm({ ...form, transaction_date: e.target.value })} />
-        <button className="rounded bg-blue-600 px-4 py-2 text-white">Update</button>
+        <input className="form-input" placeholder="Amount" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
+        <input className="form-input" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+        <input className="form-input" type="date" value={form.transaction_date} onChange={(e) => setForm({ ...form, transaction_date: e.target.value })} />
+        <button className="btn">Update</button>
       </form>
     </div>
   );

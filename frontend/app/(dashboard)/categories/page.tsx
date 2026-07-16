@@ -27,29 +27,30 @@ export default function CategoriesPage() {
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-      <div className="rounded-2xl bg-white p-6 shadow">
-        <h1 className="mb-4 text-2xl font-semibold">Categories</h1>
-        <div className="space-y-3">
+    <div style={{display:'grid',gap:20,gridTemplateColumns:'1.3fr 0.9fr'}}>
+      <div className="card">
+        <h1 style={{marginBottom:12,fontSize:20,fontWeight:700}}>Categories</h1>
+        <div style={{display:'grid',gap:10}}>
           {categories.map((category) => (
-            <div key={category.id} className="flex items-center justify-between rounded border p-3">
+            <div key={category.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:12,borderRadius:8}}>
               <div>
-                <p className="font-medium">{category.name}</p>
-                <p className="text-sm text-slate-500">{category.type}</p>
+                <p style={{fontWeight:700}}>{category.name}</p>
+                <p className="muted" style={{fontSize:12}}>{category.type}</p>
               </div>
             </div>
           ))}
         </div>
       </div>
-      <div className="rounded-2xl bg-white p-6 shadow">
-        <h2 className="mb-4 text-xl font-semibold">Add Category</h2>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <input className="w-full rounded border p-3" placeholder="Category name" value={name} onChange={(e) => setName(e.target.value)} />
-          <select className="w-full rounded border p-3" value={type} onChange={(e) => setType(e.target.value)}>
+
+      <div className="card">
+        <h2 style={{marginBottom:12,fontSize:18,fontWeight:700}}>Add Category</h2>
+        <form style={{display:'grid',gap:12}} onSubmit={handleSubmit}>
+          <input className="form-input" placeholder="Category name" value={name} onChange={(e) => setName(e.target.value)} />
+          <select className="form-input" value={type} onChange={(e) => setType(e.target.value)}>
             <option value="income">Income</option>
             <option value="expense">Expense</option>
           </select>
-          <button className="rounded bg-blue-600 px-4 py-2 text-white">Save</button>
+          <button className="btn">Save</button>
         </form>
       </div>
     </div>
