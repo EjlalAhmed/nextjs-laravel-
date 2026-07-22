@@ -39,9 +39,9 @@ class ReportController extends Controller
     {
         $userId = $request->user()->id;
 
-        $data = Transaction::where('user_id', $userId)
+        $data = Transaction::where('transactions.user_id', $userId)
             ->join('categories', 'transactions.category_id', '=', 'categories.id')
-            ->select('categories.name as category', DB::raw('SUM(amount) as total'))
+            ->select('categories.name as category', DB::raw('SUM(transactions.amount) as total'))
             ->groupBy('categories.name')
             ->orderByDesc('total')
             ->get();

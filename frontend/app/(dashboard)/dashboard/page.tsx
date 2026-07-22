@@ -1,104 +1,158 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import axios from 'axios';
 
-interface Summary {
-  total_income: number;
-  total_expense: number;
+const API = 'http://127.0.0.1:8000/api';
+
+type Ledger = {
+  id: number;
+  name: string;
+  category?: string | null;
+  opening_debit: number;
+  opening_credit: number;
+  debit: number;
+  credit: number;
   balance: number;
-  monthly_budget: number;
+};
+
+type Journal = {
+  id: number;
+  entry_date: string;
+  first_ledger: string;
+  second_ledger: string;
+  reference_no?: string | null;
+  description: string;
+  debit: number;
+  credit: number;
+};
+
+function money(value: number) {
+  return `PKR ${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-interface TransactionItem {
-  id: number;
-  description: string;
-  amount: number;
-  type: string;
-  transaction_date: string;
+function authHeaders() {
+  const token = localStorage.getItem('token');
+  return { Authorization: `Bearer ${token}` };
 }
 
 export default function DashboardPage() {
-  const [summary, setSummary] = useState<Summary | null>(null);
-  const [transactions, setTransactions] = useState<TransactionItem[]>([]);
+  const [ledgers, setLedgers] = useState<Ledger[]>([]);
+  const [journals, setJournals] = useState<Journal[]>([]);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+
     if (!token) {
       window.location.href = '/login';
       return;
     }
 
-    axios
-      .get('http://127.0.0.1:8000/api/dashboard', { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => {
-        setSummary(res.data.summary);
-        setTransactions(res.data.transactions);
+    Promise.all([
+      axios.get(`${API}/ledgers`, { headers: authHeaders() }),
+      axios.get(`${API}/journals`, { headers: authHeaders() }),
+    ])
+      .then(([ledgerRes, journalRes]) => {
+        setLedgers(ledgerRes.data);
+        setJournals(journalRes.data.slice(0, 5));
+        setError('');
       })
-      .catch(() => {});
+      .catch(() => setError('Dashboard ledger data load nahi ho saka.'));
   }, []);
 
+  const summary = useMemo(() => {
+    const openingDebit = ledgers.reduce((sum, ledger) => sum + Number(ledger.opening_debit || 0), 0);
+    const openingCredit = ledgers.reduce((sum, ledger) => sum + Number(ledger.opening_credit || 0), 0);
+    const movementDebit = ledgers.reduce((sum, ledger) => sum + Number(ledger.debit || 0), 0) - openingDebit;
+    const movementCredit = ledgers.reduce((sum, ledger) => sum + Number(ledger.credit || 0), 0) - openingCredit;
+    const closingDebit = ledgers.reduce((sum, ledger) => sum + (ledger.balance >= 0 ? Number(ledger.balance) : 0), 0);
+    const closingCredit = ledgers.reduce((sum, ledger) => sum + (ledger.balance < 0 ? Math.abs(Number(ledger.balance)) : 0), 0);
+
+    return {
+      openingDebit,
+      openingCredit,
+      movementDebit,
+      movementCredit,
+      closingDebit,
+      closingCredit,
+      netBalance: closingDebit - closingCredit,
+    };
+  }, [ledgers]);
+
   return (
-    <div className="space-y-6">
-      <div className="card">
-        <p className="muted" style={{ textTransform: 'uppercase', letterSpacing: '.15em', fontSize: 12 }}>
-          Overview
-        </p>
-        <h1 style={{ marginTop: 8, fontSize: 26, fontWeight: 700 }}>Your financial snapshot</h1>
-      </div>
+    <div className="ledger-page">
+      <section className="ledger-hero dashboard-hero">
+        <p className="muted">Dashboard</p>
+        <h1>Ledger Summary</h1>
+      </section>
 
-      <div className="kpi-grid">
-        <div className="card">
-          <p className="muted">Total Income</p>
-          <p style={{ marginTop: 8, fontSize: 20, fontWeight: 700 }}>${summary?.total_income ?? 0}</p>
-        </div>
-        <div className="card">
-          <p className="muted">Total Expense</p>
-          <p style={{ marginTop: 8, fontSize: 20, fontWeight: 700 }}>${summary?.total_expense ?? 0}</p>
-        </div>
-        <div className="card">
-          <p className="muted">Balance</p>
-          <p style={{ marginTop: 8, fontSize: 20, fontWeight: 700 }}>${summary?.balance ?? 0}</p>
-        </div>
-        <div className="card">
-          <p className="muted">Monthly Budget</p>
-          <p style={{ marginTop: 8, fontSize: 20, fontWeight: 700 }}>${summary?.monthly_budget ?? 0}</p>
-        </div>
-      </div>
+      {error && <div className="alert-error">{error}</div>}
 
-      <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 700 }}>Recent Transactions</h2>
-          <a href="/transactions" className="muted">
-            View all
-          </a>
+      <section className="card dashboard-summary-panel">
+        <div className="section-heading">
+          <div>
+            <p className="muted">Overview</p>
+            <h2>Opening, Movement and Closing Balance</h2>
+          </div>
+          <Link className="theme-link-btn" href="/ledger">Open Ledger</Link>
         </div>
 
-        <table className="table">
+        <div className="kpi-grid">
+          <SummaryCard label="Opening Debit" value={summary.openingDebit} tone="debit" />
+          <SummaryCard label="Opening Credit" value={summary.openingCredit} tone="credit" />
+          <SummaryCard label="Movement Debit" value={summary.movementDebit} tone="debit" />
+          <SummaryCard label="Movement Credit" value={summary.movementCredit} tone="credit" />
+          <SummaryCard label="Closing Debit" value={summary.closingDebit} tone="debit" />
+          <SummaryCard label="Closing Credit" value={summary.closingCredit} tone="credit" />
+          <SummaryCard label="Net Balance" value={summary.netBalance} tone={summary.netBalance >= 0 ? 'debit' : 'credit'} />
+        </div>
+      </section>
+
+      <section className="card">
+        <div className="section-heading">
+          <div>
+            <p className="muted">Records</p>
+            <h2>General Ledger Entries</h2>
+          </div>
+          <Link className="theme-link-btn" href="/ledger">View all</Link>
+        </div>
+
+        <table className="table ledger-table">
           <thead>
             <tr>
+              <th>Date</th>
+              <th>Debit Ledger</th>
+              <th>Credit Ledger</th>
               <th>Description</th>
-              <th className="muted">Type</th>
-              <th style={{ textAlign: 'right' }}>Amount</th>
-              <th className="muted">Date</th>
+              <th>Debit</th>
+              <th>Credit</th>
             </tr>
           </thead>
           <tbody>
-            {transactions.map((transaction) => (
-              <tr key={transaction.id}>
-                <td>
-                  <div style={{ fontWeight: 600 }}>{transaction.description}</div>
-                </td>
-                <td className="muted">{transaction.type}</td>
-                <td style={{ textAlign: 'right' }} className={transaction.type === 'income' ? 'badge-income' : 'badge-expense'}>
-                  {transaction.type === 'income' ? '+' : '-'}${transaction.amount}
-                </td>
-                <td className="muted">{transaction.transaction_date}</td>
+            {journals.map((entry) => (
+              <tr key={entry.id}>
+                <td>{entry.entry_date}</td>
+                <td>{entry.first_ledger}</td>
+                <td>{entry.second_ledger}</td>
+                <td>{entry.description}</td>
+                <td className="amount-dr">{money(entry.debit)}</td>
+                <td className="amount-cr">{money(entry.credit)}</td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </section>
+    </div>
+  );
+}
+
+function SummaryCard({ label, value, tone }: { label: string; value: number; tone: 'debit' | 'credit' }) {
+  return (
+    <div className="card summary-card">
+      <p className="muted">{label}</p>
+      <strong className={tone === 'debit' ? 'amount-dr' : 'amount-cr'}>{money(value)}</strong>
     </div>
   );
 }

@@ -2,51 +2,114 @@
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { BarChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, PieChart, Pie, Cell } from 'recharts';
+import {
+  Bar,
+  CartesianGrid,
+  ComposedChart,
+  Legend,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
-const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'];
+type MonthlyReport = {
+  month: string;
+  income: number;
+  expense: number;
+};
+
+type YearlyReport = {
+  year: number;
+  income: number;
+  expense: number;
+};
+
+const chartMargin = { top: 18, right: 24, left: 8, bottom: 4 };
+
+function money(value: number) {
+  return `PKR ${Number(value || 0).toLocaleString()}`;
+}
 
 export default function ReportsPage() {
-  const [monthly, setMonthly] = useState<any[]>([]);
-  const [categoryData, setCategoryData] = useState<any[]>([]);
+  const [monthly, setMonthly] = useState<MonthlyReport[]>([]);
+  const [yearly, setYearly] = useState<YearlyReport[]>([]);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    axios.get('http://127.0.0.1:8000/api/reports/monthly', { headers: { Authorization: `Bearer ${token}` } }).then((res) => setMonthly(res.data));
-    axios.get('http://127.0.0.1:8000/api/reports/category-wise', { headers: { Authorization: `Bearer ${token}` } }).then((res) => setCategoryData(res.data));
+
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+
+    Promise.all([
+      axios.get('http://127.0.0.1:8000/api/reports/monthly', { headers: { Authorization: `Bearer ${token}` } }),
+      axios.get('http://127.0.0.1:8000/api/reports/yearly', { headers: { Authorization: `Bearer ${token}` } }),
+    ])
+      .then(([monthlyRes, yearlyRes]) => {
+        setMonthly(monthlyRes.data);
+        setYearly(yearlyRes.data);
+        setError('');
+      })
+      .catch(() => setError('Reports data load nahi ho saka. Backend server aur login token check karein.'));
   }, []);
 
   return (
-    <div className="space-y-6">
-      <div className="card">
-        <h2 style={{marginBottom:12,fontSize:18,fontWeight:700}}>Monthly Report</h2>
-        <div style={{height:320}}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={monthly}>
-              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.06} />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="income" fill="#06b6d4" />
-              <Bar dataKey="expense" fill="#ef4444" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+    <div className="ledger-page">
+      {error && <div className="alert-error">{error}</div>}
 
-      <div className="card">
-        <h2 style={{marginBottom:12,fontSize:18,fontWeight:700}}>Category Report</h2>
-        <div style={{height:320}}>
+      <section className="card report-card">
+        <div className="section-heading">
+          <div>
+            <p className="muted">Report</p>
+            <h2>Monthly Line and Bar Report</h2>
+          </div>
+        </div>
+
+        <div className="report-chart">
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie data={categoryData} dataKey="total" nameKey="category" outerRadius={120}>
-                {categoryData.map((entry, index) => (<Cell key={entry.category} fill={COLORS[index % COLORS.length]} />))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
+            <ComposedChart data={monthly} margin={chartMargin}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
+              <XAxis dataKey="month" stroke="var(--muted)" />
+              <YAxis stroke="var(--muted)" tickFormatter={(value) => `${Number(value) / 1000}k`} />
+              <Tooltip formatter={(value) => money(Number(value))} contentStyle={{ borderRadius: 8 }} />
+              <Legend />
+              <Bar dataKey="income" name="Income Bar" fill="var(--accent)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="expense" name="Expense Bar" fill="var(--danger)" radius={[6, 6, 0, 0]} />
+              <Line type="monotone" dataKey="income" name="Income Line" stroke="var(--success)" strokeWidth={3} dot={{ r: 4 }} />
+              <Line type="monotone" dataKey="expense" name="Expense Line" stroke="var(--accent-2)" strokeWidth={3} dot={{ r: 4 }} />
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </section>
+
+      <section className="card report-card">
+        <div className="section-heading">
+          <div>
+            <p className="muted">Report</p>
+            <h2>Yearly Line and Bar Report</h2>
+          </div>
+        </div>
+
+        <div className="report-chart">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={yearly} margin={chartMargin}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
+              <XAxis dataKey="year" stroke="var(--muted)" />
+              <YAxis stroke="var(--muted)" tickFormatter={(value) => `${Number(value) / 1000}k`} />
+              <Tooltip formatter={(value) => money(Number(value))} contentStyle={{ borderRadius: 8 }} />
+              <Legend />
+              <Bar dataKey="income" name="Income Bar" fill="var(--accent)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="expense" name="Expense Bar" fill="var(--danger)" radius={[6, 6, 0, 0]} />
+              <Line type="monotone" dataKey="income" name="Income Line" stroke="var(--success)" strokeWidth={3} dot={{ r: 4 }} />
+              <Line type="monotone" dataKey="expense" name="Expense Line" stroke="var(--accent-2)" strokeWidth={3} dot={{ r: 4 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </section>
     </div>
   );
 }

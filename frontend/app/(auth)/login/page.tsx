@@ -17,7 +17,7 @@ export default function LoginPage() {
     try {
       const response = await axios.post('http://127.0.0.1:8000/api/login', { email, password });
       localStorage.setItem('token', response.data.token);
-      router.push('/dashboard');
+      router.push('/ledger');
     } catch (error) {
       alert('Login failed');
     } finally {

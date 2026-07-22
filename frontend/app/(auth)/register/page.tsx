@@ -19,7 +19,7 @@ export default function RegisterPage() {
     try {
       const response = await axios.post('http://127.0.0.1:8000/api/register', { name, email, password, password_confirmation: passwordConfirmation });
       localStorage.setItem('token', response.data.token);
-      router.push('/dashboard');
+      router.push('/ledger');
     } catch (error) {
       alert('Registration failed');
     } finally {
