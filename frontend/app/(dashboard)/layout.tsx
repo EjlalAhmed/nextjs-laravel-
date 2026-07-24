@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
 const navItems = [
@@ -10,34 +11,44 @@ const navItems = [
   { href: '/reports', label: 'Reports' },
 ];
 
+const managementNavItems = [
+  { href: '/users', label: 'Users' },
+];
+
 const accentOptions = ['cyan-violet', 'slate-orange', 'rose-blue', 'orange-violet', 'pink-emerald'];
 const sidebarTypes = ['mini', 'hover', 'boxed'];
 const activeStyles = ['rounded-one-side', 'rounded-all', 'pill-one-side', 'pill-all'];
 const navbarStyles = ['glass', 'color', 'sticky', 'transparent'];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [profileOpen, setProfileOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [user, setUser] = useState<{ name?: string; email?: string } | null>(null);
+  const [user, setUser] = useState<{ name?: string; email?: string; role?: string } | null>(null);
   const [theme, setTheme] = useState('dark');
   const [accent, setAccent] = useState('orange-violet');
   const [sidebarColor, setSidebarColor] = useState('dark');
   const [sidebarType, setSidebarType] = useState('boxed');
   const [activeStyle, setActiveStyle] = useState('rounded-all');
   const [navbarStyle, setNavbarStyle] = useState('glass');
+  const canManageUsers = user?.role === 'super_admin' || user?.role === 'admin';
 
   useEffect(() => {
     const token = localStorage.getItem('token');
 
     if (!token) {
+      router.push('/login');
       return;
     }
 
     axios
       .get('http://127.0.0.1:8000/api/me', { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => setUser(res.data))
-      .catch(() => {});
-  }, []);
+      .catch(() => {
+        localStorage.removeItem('token');
+        router.push('/login');
+      });
+  }, [router]);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme.scheme');
@@ -102,6 +113,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {item.label}
             </Link>
           ))}
+          {canManageUsers && managementNavItems.map((item) => (
+            <Link key={item.href} href={item.href} className="nav-link">
+              {item.label}
+            </Link>
+          ))}
         </nav>
       </aside>
       <main className="main">
@@ -110,7 +126,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <span className="profile-avatar">{(user?.name || 'U').charAt(0).toUpperCase()}</span>
             <span>
               <strong>{user?.name || 'Customer'}</strong>
-              <small>Admin</small>
+              <small>{(user?.role || 'user').replaceAll('_', ' ')}</small>
             </span>
           </button>
           {profileOpen && (

@@ -17,7 +17,7 @@ class AccountingReportController extends Controller
 
         $ledgers = Ledger::where('user_id', $request->user()->id)
             ->with(['journalLines.entry'])
-            ->orderBy('name')
+            ->orderBy('id')
             ->get()
             ->map(function (Ledger $ledger) use ($queryDate, $month) {
                 $lines = $ledger->journalLines->filter(function ($line) use ($queryDate, $month) {

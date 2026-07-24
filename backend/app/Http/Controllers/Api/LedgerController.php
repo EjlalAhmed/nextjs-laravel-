@@ -12,7 +12,7 @@ class LedgerController extends Controller
     {
         $ledgers = Ledger::where('user_id', $request->user()->id)
             ->with('journalLines')
-            ->orderBy('name')
+            ->orderBy('id')
             ->get()
             ->map(fn (Ledger $ledger) => $this->formatLedger($ledger));
 

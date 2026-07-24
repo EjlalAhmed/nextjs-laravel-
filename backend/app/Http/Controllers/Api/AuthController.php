@@ -23,6 +23,7 @@ class AuthController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'role' => User::query()->exists() ? User::ROLE_USER : User::ROLE_SUPER_ADMIN,
         ]);
 
         $token = Str::random(60);
