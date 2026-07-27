@@ -67,7 +67,7 @@ export default function UsersPage() {
       setCurrentUser(meResponse.data);
       setUsers(usersResponse.data.data);
     } catch {
-      setError('Users load nahi ho sake. Apna role ya login check karein.');
+      setError('Failed to load users. Please check your role or log in again.');
     } finally {
       setLoading(false);
     }
@@ -133,7 +133,7 @@ export default function UsersPage() {
     return (
       <div className="card">
         <h1 style={{ margin: 0, fontSize: 22 }}>Users</h1>
-        <p className="muted">Is page ke liye admin ya super admin role chahiye.</p>
+        <p className="muted">You need an Admin or Super Admin role to access this page.</p>
       </div>
     );
   }
@@ -227,7 +227,7 @@ export default function UsersPage() {
                 {users.length === 0 && (
                   <tr>
                     <td colSpan={4} className="muted">
-                      Abhi koi account create nahi hua.
+                      No accounts have been created yet.
                     </td>
                   </tr>
                 )}
