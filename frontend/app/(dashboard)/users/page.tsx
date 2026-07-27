@@ -91,14 +91,14 @@ export default function UsersPage() {
 
     try {
       await axios.post(`${API}/users`, form, { headers: authHeaders() });
-      setMessage(`${roleLabel(form.role)} create ho gaya.`);
+      setMessage(`${roleLabel(form.role)} create new user.`);
       setForm({ name: '', email: '', password: '', role: roleOptions[0] ?? 'user' });
       await loadPage();
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 403) {
-        setError('Is role ko create karne ki permission nahi hai.');
+        setError('You are not authorized to create this role.');
       } else {
-        setError('User create nahi ho saka. Details check karein.');
+        setError('Failed to create the user. Please verify the provided details.');
       }
     } finally {
       setSaving(false);
